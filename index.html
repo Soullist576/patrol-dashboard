@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบตรวจจุด รปภ — โรงงานธารเกษม</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f59e0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ตรวจจุด รปภ">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0d1b2a;--navy2:#1a2d42;--navy3:#243b55;--amber:#f59e0b;--amber2:#d97706;--amber3:#fbbf24;--green:#10b981;--red:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--border:rgba(255,255,255,0.08)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Sarabun',sans-serif;background:var(--navy);color:var(--text);min-height:100vh}
+  .header{background:var(--navy2);border-bottom:2px solid var(--amber);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
+  .header-brand{display:flex;align-items:center;gap:14px}
+  .header-icon{width:38px;height:38px;background:var(--amber);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .header-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;color:#fff}
+  .header-sub{font-size:12px;color:var(--amber);font-weight:500;letter-spacing:2px;text-transform:uppercase}
+  .header-clock{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--amber3);letter-spacing:2px}
+  .nav{background:var(--navy2);display:flex;gap:4px;padding:0 2rem;border-bottom:1px solid var(--border)}
+  .nav-tab{padding:12px 20px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;letter-spacing:0.5px}
+  .nav-tab:hover{color:var(--text)}
+  .nav-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+  .content{padding:2rem;max-width:1200px;margin:0 auto}
+  .page{display:none}.page.active{display:block}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:2rem}
+  .stat-card{background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;position:relative;overflow:hidden}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--amber)}
+  .stat-card.green::before{background:var(--green)}.stat-card.red::before{background:var(--red)}.stat-card.blue::before{background:#60a5fa}
+  .stat-label{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+  .stat-value{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:700;color:#fff;line-height:1}
+  .stat-sub{font-size:12px;color:var(--text2);margin-top:4px}
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--amber);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:10px}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+  .dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:2rem}
+  .card{background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem}
+  .guard-list{display:flex;flex-direction:column;gap:8px}
+  .guard-item{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+  .guard-item:last-child{border-bottom:none}
+  .guard-avatar{width:36px;height:36px;border-radius:50%;background:var(--navy3);border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--amber);flex-shrink:0}
+  .guard-name{font-size:14px;font-weight:500;flex:1}
+  .guard-count{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--amber3)}
+  .guard-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(16,185,129,0.15);color:var(--green);font-weight:600}
+  .alert-list{display:flex;flex-direction:column;gap:8px}
+  .alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px}
+  .alert-dot{width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:5px;flex-shrink:0;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .alert-loc{font-size:13px;font-weight:600;color:#fca5a5}
+  .alert-note{font-size:12px;color:var(--text2)}
+  .alert-time{font-size:11px;color:var(--text2);margin-left:auto;white-space:nowrap}
+  .checkpoint-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:2rem}
+  .cp-tile{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all 0.2s}
+  .cp-tile:hover{border-color:var(--amber);transform:translateY(-2px)}
+  .cp-tile.normal{border-color:rgba(16,185,129,0.3)}
+  .cp-tile.abnormal{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.05)}
+  .cp-num{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--amber)}
+  .cp-name{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.3}
+  .cp-status{width:8px;height:8px;border-radius:50%;margin:6px auto 0}
+  .cp-status.ok{background:var(--green)}.cp-status.warn{background:var(--red)}.cp-status.none{background:var(--text2);opacity:0.4}
+  .form-card{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:700px;margin:0 auto}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .form-group{display:flex;flex-direction:column;gap:6px}
+  .form-group.full{grid-column:1/-1}
+  label{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase}
+  select,input,textarea{background:var(--navy);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;width:100%}
+  select:focus,input:focus,textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,0.1)}
+  textarea{resize:vertical;min-height:80px}
+  select option{background:var(--navy2)}
+  .radio-group{display:flex;gap:12px}
+  .radio-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:2px solid var(--border);border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;transition:all 0.2s}
+  .radio-btn input{display:none}
+  .radio-btn.ok-btn:has(input:checked){border-color:var(--green);background:rgba(16,185,129,0.1);color:var(--green)}
+  .radio-btn.warn-btn:has(input:checked){border-color:var(--red);background:rgba(239,68,68,0.1);color:#fca5a5}
+  .submit-btn{width:100%;padding:14px;background:var(--amber);color:#000;border:none;border-radius:10px;font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:0.5px;transition:all 0.2s}
+  .submit-btn:hover{background:var(--amber3);transform:translateY(-1px)}
+  .submit-btn:active{transform:translateY(0)}
+  .abnormal-section{display:none;grid-column:1/-1;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:1rem;gap:12px}
+  .abnormal-section.show{display:flex;flex-direction:column}
+  .filters{display:flex;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap}
+  .filters select,.filters input{flex:1;min-width:160px;max-width:240px}
+  .filter-search{flex:2!important;max-width:300px!important}
+  .table-wrapper{background:var(--navy2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{background:var(--navy3);padding:12px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap}
+  tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:rgba(255,255,255,0.03)}
+  td{padding:11px 14px;vertical-align:middle}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px}
+  .badge-ok{background:rgba(16,185,129,0.15);color:#34d399}
+  .badge-warn{background:rgba(239,68,68,0.15);color:#fca5a5}
+  .td-loc{font-weight:600;color:var(--amber3)}.td-time{color:var(--text2);font-size:12px}.td-guard{font-size:13px}.td-note{color:#fca5a5;font-size:12px}
+  .empty-state{text-align:center;padding:3rem;color:var(--text2)}
+  .empty-icon{font-size:48px;margin-bottom:12px}
+  .toast{position:fixed;bottom:2rem;right:2rem;background:var(--navy3);border-left:4px solid var(--amber);border-radius:10px;padding:1rem 1.5rem;color:var(--text);font-size:14px;font-weight:600;z-index:999;transform:translateY(100px);opacity:0;transition:all 0.3s;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.success{border-left-color:var(--green)}
+  .pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)}
+  .page-btns{display:flex;gap:4px}
+  .page-btn{padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:13px;font-family:'Sarabun',sans-serif;transition:all 0.15s}
+  .page-btn:hover{border-color:var(--amber);color:var(--amber)}
+  .page-btn.active{background:var(--amber);color:#000;border-color:var(--amber);font-weight:700}
+  .page-btn:disabled{opacity:0.3;cursor:default}
+  .export-btn{padding:9px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px;font-family:'Sarabun',sans-serif;font-weight:600;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+  .export-btn:hover{border-color:var(--amber);color:var(--amber)}
+  @media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}.dashboard-grid{grid-template-columns:1fr}.checkpoint-grid{grid-template-columns:repeat(4,1fr)}.form-grid{grid-template-columns:1fr}.content{padding:1rem}.header-title{font-size:16px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-brand">
+    <div class="header-icon">🛡️</div>
+    <div><div class="header-title">ระบบตรวจจุด รปภ</div><div class="header-sub">โรงงานธารเกษม</div></div>
+  </div>
+  <div class="header-clock" id="clock">--:--:--</div>
+</header>
+<nav class="nav">
+  <div class="nav-tab active" onclick="switchTab('dashboard')">📊 ภาพรวม</div>
+  <div class="nav-tab" onclick="switchTab('form')">✏️ บันทึกการตรวจ</div>
+  <div class="nav-tab" onclick="switchTab('history')">📋 ประวัติการตรวจ</div>
+</nav>
+<div class="content">
+<div class="page active" id="page-dashboard">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">รอบตรวจวันนี้</div><div class="stat-value" id="stat-today">0</div><div class="stat-sub">รายการบันทึก</div></div>
+    <div class="stat-card green"><div class="stat-label">จุดปกติ</div><div class="stat-value" id="stat-normal">0</div><div class="stat-sub">จุดตรวจ</div></div>
+    <div class="stat-card red"><div class="stat-label">จุดผิดปกติ</div><div class="stat-value" id="stat-abnormal">0</div><div class="stat-sub">ต้องแก้ไข</div></div>
+    <div class="stat-card blue"><div class="stat-label">ผู้ปฏิบัติงาน</div><div class="stat-value" id="stat-guards">0</div><div class="stat-sub">คนวันนี้</div></div>
+  </div>
+  <div class="section-title">สถานะจุดตรวจ 20 จุด</div>
+  <div class="checkpoint-grid" id="cp-grid"></div>
+  <div class="dashboard-grid">
+    <div class="card"><div class="section-title" style="font-size:15px">ผู้เดินตรวจ</div><div class="guard-list" id="guard-stats"></div></div>
+    <div class="card"><div class="section-title" style="font-size:15px">แจ้งเตือนผิดปกติ</div><div class="alert-list" id="alert-list"><div class="empty-state" style="padding:1.5rem"><div>✅</div><div style="margin-top:8px;font-size:13px">ไม่พบเหตุผิดปกติในวันนี้</div></div></div></div>
+  </div>
+</div>
+<div class="page" id="page-form">
+  <div class="form-card">
+    <div class="section-title" style="margin-bottom:1.5rem">บันทึกการตรวจพื้นที่</div>
+    <div class="form-grid">
+      <div class="form-group"><label>ชื่อ-สกุล ผู้ตรวจ</label><select id="f-guard"><option value="">— เลือกผู้ตรวจ —</option></select></div>
+      <div class="form-group"><label>จุดตรวจ</label><select id="f-location"><option value="">— เลือกจุดตรวจ —</option></select></div>
+      <div class="form-group full"><label>สถานการณ์</label>
+        <div class="radio-group">
+          <label class="radio-btn ok-btn"><input type="radio" name="status" value="ปกติ" checked onchange="toggleAbnormal(this)">✅ ปกติ</label>
+          <label class="radio-btn warn-btn"><input type="radio" name="status" value="ไม่ปกติ" onchange="toggleAbnormal(this)">⚠️ ไม่ปกติ</label>
+        </div>
+      </div>
+      <div class="abnormal-section" id="abnormal-section">
+        <div class="form-group"><label>ประเภทเหตุการณ์ผิดปกติ</label><select id="f-event-type"><option value="">— เลือกประเภท —</option></select></div>
+        <div class="form-group"><label>รายละเอียดเพิ่มเติม</label><textarea id="f-note" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea></div>
+      </div>
+      <div class="form-group full"><button class="submit-btn" onclick="submitForm()">💾 บันทึกการตรวจ</button></div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-history">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px">
+    <div class="section-title" style="margin-bottom:0">ประวัติการตรวจพื้นที่</div>
+    <div style="display:flex;gap:8px"><button class="export-btn" onclick="exportCSV()">📥 Export CSV</button></div>
+  </div>
+  <div class="filters">
+    <input class="filter-search" type="text" id="flt-search" placeholder="🔍 ค้นหาชื่อ / จุดตรวจ..." oninput="applyFilters()">
+    <select id="flt-guard" onchange="applyFilters()"><option value="">ผู้ตรวจ: ทั้งหมด</option></select>
+    <select id="flt-status" onchange="applyFilters()"><option value="">สถานะ: ทั้งหมด</option><option value="ปกติ">ปกติ</option><option value="ไม่ปกต์">ไม่ปกติ</option></select>
+    <select id="flt-loc" onchange="applyFilters()"><option value="">จุดตรวจ: ทั้งหมด</option></select>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>#</th><th>เวลา</th><th>จุดตรวจ</th><th>ผู้ตรวจ</th><th>สถานะ</th><th>หมายเหตุ</th></tr></thead>
+      <tbody id="history-tbody"></tbody>
+    </table>
+    <div class="pagination"><span id="page-info"></span><div class="page-btns" id="page-btns"></div></div>
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const GUARDS=['นายสุพจน์ โพธิ์นวล','นายนพดล วงษ์ตา','นายชนุดม จันทร์สีขาว','กฤษณะ ใจธรรม','นายทองล้วน ทองเหลื่อม','นายกริช ภักดี','นายชวลิต สีแวงนอก','สามารถ ใหมธรรมจักร','นายวสันต์ อบชัย','ธีรวัฒน์ ทองพุ','ยงยุทธ์ ออสถิตย์','นายชิวลิต สีแวงนอก'];
+const CHECKPOINTS=[{id:1,name:'โรงอาหาร'},{id:2,name:'สำนักงานบัญชี'},{id:3,name:'ห้องเก็บเอกสารบัญชี'},{id:4,name:'มุมโกดัง K2'},{id:5,name:'ห้องน้ำตึก 2'},{id:6,name:'ปั๊มดับเพลิง'},{id:7,name:'มุมโกดัง K3'},{id:8,name:'มุมโกดัง B2'},{id:9,name:'มุมรั้วท้ายลาน'},{id:10,name:'มุมโกดัง B3'},{id:11,name:'มุมรั้วประตูไร่ข้าวโพด'},{id:12,name:'ไซโล 3'},{id:13,name:'ไซโล 1'},{id:14,name:'มุมโกดัง K1'},{id:15,name:'โรงพักขยะ'},{id:16,name:'บอยเลอร์'},{id:17,name:'มุมรั้ววิศวกรรมติดรับเหมา'},{id:18,name:'Shop รับเหมา'},{id:19,name:'มุมรั้วสนามบอล'},{id:20,name:'ห้องน้ำลานจอดรถ'}];
+const EVENT_TYPES=['เครื่องปรับอากาศ','ท่อประปาแตก','วัตถุดิบหก-หล่นลงพื้น','มีรถเฉี่ยวชน','ก๊อกน้ำชำรุด','เศษวัตถุดิบ/ของเสียเก็บไม่ถูกที่','รางระบายน้ำมีกลิ่น','พาแขกเยี่ยมชมโรงงาน','รปภ.มาไม่ครบ','ก๊อกน้ำหยด','น้ำรั่วซึม','หลังคารั่ว','พบก้นบุหรี่','รางระบายน้ำชำรุด','สายไฟชำรุด','ไฟแสงสว่างไม่เปิด','ข้าวโพดหก-หล่นลงพื้น','รางระบายน้ำอุดตัน','ไฟแสงสว่างไม่ติด','ประตูโกดังไม่ได้ปิด','หลอดไฟอาจเสีย','อื่นๆ'];
+let records=JSON.parse(localStorage.getItem('security_records')||'[]');
+let filteredRecords=[],currentPage=1;
+const PER_PAGE=20;
+function init(){populateSelects();renderCheckpointGrid();renderDashboard();updateClock();setInterval(updateClock,1000);applyFilters();}
+function populateSelects(){
+  const gSel=document.getElementById('f-guard'),fltGuard=document.getElementById('flt-guard');
+  GUARDS.forEach(g=>{gSel.innerHTML+=`<option value="${g}">${g}</option>`;fltGuard.innerHTML+=`<option value="${g}">${g}</option>`;});
+  const locSel=document.getElementById('f-location'),fltLoc=document.getElementById('flt-loc');
+  CHECKPOINTS.forEach(cp=>{locSel.innerHTML+=`<option value="จุดที่ ${cp.id} ${cp.name}">จุดที่ ${cp.id} ${cp.name}</option>`;fltLoc.innerHTML+=`<option value="จุดที่ ${cp.id} ${cp.name}">จุดที่ ${cp.id} ${cp.name}</option>`;});
+  const evtSel=document.getElementById('f-event-type');
+  EVENT_TYPES.forEach(e=>{evtSel.innerHTML+=`<option value="${e}">${e}</option>`;});
+}
+function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function switchTab(tab){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('page-'+tab).classList.add('active');
+  if(tab==='dashboard')renderDashboard();
+  if(tab==='history')applyFilters();
+}
+function renderCheckpointGrid(){
+  const grid=document.getElementById('cp-grid'),today=todayStr(),todayRec=records.filter(r=>r.date===today);
+  grid.innerHTML=CHECKPOINTS.map(cp=>{
+    const cpRecs=todayRec.filter(r=>r.location===`จุดที่ ${cp.id} ${cp.name}`);
+    const hasAbnormal=cpRecs.some(r=>r.status==='ไม่ปกติ'),checked=cpRecs.length>0;
+    return `<div class="cp-tile ${checked?(hasAbnormal?'abnormal':'normal'):''}" onclick="quickFilter('จุดที่ ${cp.id} ${cp.name}')">
+      <div class="cp-num">${cp.id}</div><div class="cp-name">${cp.name}</div>
+      <div class="cp-status ${checked?(hasAbnormal?'warn':'ok'):'none'}"></div></div>`;
+  }).join('');
+}
+function quickFilter(loc){
+  switchTab('history');
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===2));
+  document.getElementById('flt-loc').value=loc;applyFilters();
+}
+function renderDashboard(){
+  const today=todayStr(),todayRec=records.filter(r=>r.date===today);
+  const abnormal=todayRec.filter(r=>r.status==='ไม่ปกติ');
+  const guardsToday=[...new Set(todayRec.map(r=>r.guard))];
+  document.getElementById('stat-today').textContent=todayRec.length;
+  document.getElementById('stat-normal').textContent=todayRec.filter(r=>r.status==='ปกติ').length;
+  document.getElementById('stat-abnormal').textContent=abnormal.length;
+  document.getElementById('stat-guards').textContent=guardsToday.length;
+  renderCheckpointGrid();renderGuardStats(todayRec);renderAlerts(abnormal);
+}
+function renderGuardStats(todayRec){
+  const counts={};todayRec.forEach(r=>{counts[r.guard]=(counts[r.guard]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const el=document.getElementById('guard-stats');
+  if(!sorted.length){el.innerHTML='<div class="empty-state" style="padding:1.5rem;font-size:13px">ยังไม่มีการบันทึกวันนี้</div>';return;}
+  el.innerHTML=sorted.map(([name,cnt])=>{
+    const initials=name.replace(/^นาย|^นาง|^น\.ส\./,'').trim().slice(0,2);
+    return `<div class="guard-item"><div class="guard-avatar">${initials}</div><div class="guard-name">${name}</div><div class="guard-count">${cnt}</div><div class="guard-badge">จุด</div></div>`;
+  }).join('');
+}
+function renderAlerts(abnormal){
+  const el=document.getElementById('alert-list');
+  if(!abnormal.length){el.innerHTML='<div class="empty-state" style="padding:1.5rem"><div>✅</div><div style="margin-top:8px;font-size:13px">ไม่พบเหตุผิดปกติในวันนี้</div></div>';return;}
+  el.innerHTML=abnormal.slice(-5).reverse().map(r=>`<div class="alert-item"><div class="alert-dot"></div><div><div class="alert-loc">${r.location}</div><div class="alert-note">${r.eventType||''} ${r.note?'— '+r.note:''}</div></div><div class="alert-time">${r.time}</div></div>`).join('');
+}
+function toggleAbnormal(radio){document.getElementById('abnormal-section').classList.toggle('show',radio.value==='ไม่ปกติ');}
+function submitForm(){
+  const guard=document.getElementById('f-guard').value,location=document.getElementById('f-location').value;
+  const status=document.querySelector('input[name="status"]:checked').value;
+  const eventType=document.getElementById('f-event-type').value,note=document.getElementById('f-note').value.trim();
+  if(!guard){showToast('⚠️ กรุณาเลือกชื่อผู้ตรวจ');return;}
+  if(!location){showToast('⚠️ กรุณาเลือกจุดตรวจ');return;}
+  if(status==='ไม่ปกติ'&&!eventType){showToast('⚠️ กรุณาเลือกประเภทเหตุการณ์');return;}
+  const now=new Date();
+  const record={id:Date.now(),date:todayStr(),time:now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}),timestamp:now.toLocaleString('th-TH'),guard,location,status,eventType,note};
+  records.unshift(record);localStorage.setItem('security_records',JSON.stringify(records));
+  document.getElementById('f-location').value='';
+  document.querySelector('input[name="status"][value="ปกติ"]').checked=true;
+  document.getElementById('abnormal-section').classList.remove('show');
+  document.getElementById('f-event-type').value='';document.getElementById('f-note').value='';
+  showToast(`✅ บันทึก ${location} สำเร็จ`,true);renderDashboard();applyFilters();
+}
+function applyFilters(){
+  const search=document.getElementById('flt-search').value.toLowerCase();
+  const guard=document.getElementById('flt-guard').value,status=document.getElementById('flt-status').value,loc=document.getElementById('flt-loc').value;
+  filteredRecords=records.filter(r=>{
+    if(guard&&r.guard!==guard)return false;
+    if(status&&r.status!==status)return false;
+    if(loc&&r.location!==loc)return false;
+    if(search&&!r.guard.toLowerCase().includes(search)&&!r.location.toLowerCase().includes(search))return false;
+    return true;
+  });
+  currentPage=1;renderTable();
+}
+function renderTable(){
+  const tbody=document.getElementById('history-tbody'),start=(currentPage-1)*PER_PAGE,page=filteredRecords.slice(start,start+PER_PAGE);
+  if(!filteredRecords.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><div>ยังไม่มีข้อมูลการตรวจ</div></div></td></tr>`;
+  } else {
+    tbody.innerHTML=page.map((r,i)=>`<tr><td style="color:var(--text2)">${start+i+1}</td><td class="td-time">${r.timestamp||r.time}</td><td class="td-loc">${r.location}</td><td class="td-guard">${r.guard}</td><td><span class="badge ${r.status==='ปกติ'?'badge-ok':'badge-warn'}">${r.status}</span></td><td class="td-note">${r.eventType||''} ${r.note?'— '+r.note:''}</td></tr>`).join('');
+  }
+  const total=filteredRecords.length,pages=Math.ceil(total/PER_PAGE);
+  document.getElementById('page-info').textContent=`แสดง ${Math.min(start+1,total)}–${Math.min(start+PER_PAGE,total)} จาก ${total} รายการ`;
+  const btns=document.getElementById('page-btns');
+  btns.innerHTML=`<button class="page-btn" onclick="changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}>‹</button>`;
+  for(let p=1;p<=pages;p++){
+    if(p===1||p===pages||Math.abs(p-currentPage)<=1)btns.innerHTML+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="changePage(${p})">${p}</button>`;
+    else if(Math.abs(p-currentPage)===2)btns.innerHTML+=`<span style="color:var(--text2);padding:5px 4px">…</span>`;
+  }
+  btns.innerHTML+=`<button class="page-btn" onclick="changePage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>›</button>`;
+}
+function changePage(p){const pages=Math.ceil(filteredRecords.length/PER_PAGE);if(p<1||p>pages)return;currentPage=p;renderTable();}
+function exportCSV(){
+  const rows=[['ลำดับ','วันที่/เวลา','จุดตรวจ','ผู้ตรวจ','สถานะ','ประเภทเหตุการณ์','หมายเหตุ']];
+  filteredRecords.forEach((r,i)=>rows.push([i+1,r.timestamp||r.time,r.location,r.guard,r.status,r.eventType||'',r.note||'']));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`รปภ_ธารเกษม_${todayStr()}.csv`;a.click();URL.revokeObjectURL(url);
+  showToast('📥 Export CSV สำเร็จ',true);
+}
+function todayStr(){return new Date().toLocaleDateString('th-TH',{year:'numeric',month:'2-digit',day:'2-digit'});}
+function showToast(msg,success=false){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast show'+(success?' success':'');
+  clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+init();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'});}
+</script>
+</body>
+</html>
